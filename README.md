@@ -22,5 +22,25 @@ The goal is to build a predictive model for wave heights based on wind speed, at
 #### **Test Plan**:
 - Use a **train/test split** The data choose from 2019 to 2024( 80% of the data for training, 20% for testing from ) to evaluate the performance of your predictive models.
 
+Adressing potential issues:
+1. **Time Alignment**: 
+   - Ensure that all datasets (wave height, wind speed, atmospheric pressure, etc.) share a common timestamp. It’s important to choose a consistent time interval (e.g., hourly or daily) and aggregate or interpolate data to fit that interval if necessary.
+   - For missing or mismatched timestamps, you could use interpolation techniques like linear or spline interpolation to fill gaps in the dataset.
+
+2. **Data Merging**: 
+   - After collecting data from each source, merge them on the timestamp field. Depending on the granularity of the timestamps, you may need to resample data to a consistent frequency before merging.
+   - Use outer joins to ensure you capture all relevant data, or inner joins if you only want time periods where data from all sources is available.
+
+3. **Feature Engineering**:
+   - Consider adding lagged variables (e.g., wind speed from the previous hour or day) to capture time dependencies. This can be useful in time-series forecasting models like LSTM or ARIMA.
+   - Additionally, you can create derived features like wind pressure gradients or temperature differentials to enhance predictive power.
+
+4. **Normalization**:
+   - Since you’re collecting data from multiple sources, the units and scales might vary. Normalize or standardize your features to ensure compatibility between variables when feeding them into your machine learning models.
+
+5. **Data Quality**:
+   - Pay attention to data gaps, outliers, and inconsistencies between datasets. Automated data cleaning pipelines can help identify and rectify issues in real-time.
+
+
 
 
