@@ -43,6 +43,21 @@ Adressing potential issues (Oct 14, 2024):
 
 6. **Alternative Solution**
    - If we are not able to align the data properly, we could try to find a single data source that captures the data we need.
+  
+
+Analysis the 2023 data from Station 42042 at 29.207 N 88.237 W (29°12'24" N 88°14'12" W)
+
+1. Overview: To build a multiple linear regression model with wave height (WVHT) as the dependent variable, we first need to prepare the data, ensuring that the dataset includes independent variables such as wind direction (WDIR), average wind speed (WSPD), maximum gust speed (GST), dominant period (DPD), average period (APD), main wind direction (MWD), pressure (PRES), air temperature (ATMP), and water temperature (WTMP), along with wave height (WVHT). Next, we conduct exploratory data analysis (EDA) to understand relationships between variables using statistical charts and descriptive statistics, as well as to check data quality, handling missing values and outliers. Based on EDA results, we select suitable features, possibly performing feature engineering if needed. Then, we split the dataset into training and testing sets, often with a 70% training and 30% testing ratio. We use the training set to build the multiple linear regression model, which can be implemented using the LinearRegression class from Python’s sklearn library. After building the model, we evaluate its performance on the test set, focusing on metrics such as mean squared error (MSE) and the coefficient of determination (R²), and analyze residual plots to ensure the model meets the basic assumptions of linear regression. If the model performs poorly, it can be optimized by adjusting feature selection, addressing multicollinearity, or trying alternative models. Finally, we interpret the model coefficients to understand which factors have the greatest impact on wave height and provide practical application recommendations accordingly. Throughout the process, it is essential to avoid overfitting and to ensure the model’s generalizability.
+2. Correlation analysis of data
+![Correlation Matrix](image/correlation_matrix%201.png)
+
+Delete irrelevant indicators
+![Box Plot](image/Box_plot%201.png)
+
+After removing the outliers:
+![Box Plot after removing outliers](image/Box_plot%202.png)
+
+![Correlation Matrix after removing outliers](image/correlation_matrix%202.png)
 
 
 
