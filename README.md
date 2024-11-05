@@ -59,6 +59,44 @@ After removing the outliers:
 
 ![Correlation Matrix after removing outliers](image/correlation_matrix%202.png)
 
+3.Modeling
+1) linear regression model
+Model Parameters:
+[ 1.24867034e-04, 6.22953758e-02, -2.56387520e-02, -7.93630248e-04, 1.03557317e+00, 6.70419148e-05, -4.46014581e-04, 1.56621157e-02, 2.65817156e-05, -1.24772118e-02]
+Model Intercept:
+-3.386844226310629
+Mean Squared Error (MSE):
+0.09983868755979808
+
+The model parameters represent the effect of each independent variable on the dependent variable (wave height, WVHT). Specifically:
+
+Wind Direction (WDIR): The coefficient is 1.24867034 × 10^−4, meaning that a 1-degree increase in wind direction predicts an increase in wave height of about 0.00012 meters, a very small effect.
+Average Wind Speed (WSPD): The coefficient is 6.22953758 × 10^−2, indicating that a 1 m/s increase in average wind speed predicts an increase in wave height of about 0.062 meters.
+Maximum Gust Speed (GST): The coefficient is −2.56387520 × 10^−2, meaning that a 1 m/s increase in maximum gust speed predicts a decrease in wave height of about 0.026 meters. This could be because gusts are often short-lived, impacting wave height less than sustained average wind speed.
+Dominant Period (DPD): The coefficient is 1.03557317, indicating that a 1-second increase in the dominant period predicts a significant increase in wave height of about 1.036 meters, the most influential variable.
+Average Period (APD): The coefficient is 6.70419148 × 10^−5, suggesting that a 1-second increase in average period predicts an increase in wave height of about 0.000067 meters, which is relatively small.
+Main Wind Direction (MWD): The coefficient is −4.46014581 × 10^−4, meaning that a 1-degree change in main wind direction predicts a decrease in wave height of about 0.00045 meters.
+Pressure (PRES): The coefficient is 1.56621157 × 10^−2, indicating that a 1 hPa increase in pressure predicts an increase in wave height of about 0.016 meters.
+Air Temperature (ATMP): The coefficient is 2.65817156 × 10^−5, meaning that a 1°C increase in air temperature predicts an increase in wave height of about 0.000027 meters, an almost negligible effect.
+Water Temperature (WTMP): The coefficient is −1.24772118 × 10^−2, meaning that a 1°C increase in water temperature predicts a decrease in wave height of about 0.012 meters.
+Model Intercept
+
+The model intercept is −3.386844226310629, which implies that when all independent variables are zero, the predicted wave height would be −3.39 meters. However, in real situations, it is unlikely that all variables would be zero, so the intercept is more of a mathematical concept rather than of practical significance.
+
+Mean Squared Error (MSE)
+
+The model’s mean squared error (MSE) is 0.09983868755979808, representing the average squared difference between the predicted and actual values. A lower MSE value indicates that the model's predictions are close to the true values, suggesting good predictive accuracy.
+
+Conclusion
+Overall, this model effectively uses multiple meteorological and oceanographic variables to predict wave height. The dominant period (DPD) and average wind speed (WSPD) have the most significant impact on wave height.
+![Predicting value and actual value](image/LinearRegression_prediction1.png)
+
+
+2)RandomForestRegressor
+Mean Squared Error (MSE): 0.0034733644264875645
+![Predicting value and actual value](image/RandomForestRegressor_prediction1.png)
+
+
 
 
 
