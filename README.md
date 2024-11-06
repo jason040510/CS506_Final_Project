@@ -99,7 +99,7 @@ Conclusion:
 The Random Forest model has demonstrated excellent performance in wave height prediction tasks, especially in handling complex data relationships, outperforming the traditional multiple linear regression model. This provides a basis for selecting a more suitable model in practical applications. In future work, further exploration of parameter tuning for the Random Forest model could be undertaken to achieve even higher prediction accuracy. Additionally, combining the Random Forest model with other machine learning methods could be considered to enhance the accuracy and robustness of wave height predictions.
 
 
-* Alternative models
+####**Alternative models**
 Although the model we fit has a low MSE, the real life implication may be undermined. From the correlation matrix, we used DPD, APD (wave period) as parameters which has a correlation with WVHT very close to 1. DPD APD are essentially wave data, to prevent overfitting and make our model work without wave data, we created a different set of models without using DPD and APD (prediction.ipynb).
 
 1. Data analysis
@@ -107,7 +107,7 @@ Although the model we fit has a low MSE, the real life implication may be underm
 2. Model Fitting
 
 
-* Future plans to the model:
+####**Future plans to the model**:
 1. Expanding data selection:
 
 2. Test with other models:
