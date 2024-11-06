@@ -103,17 +103,20 @@ The Random Forest model has demonstrated excellent performance in wave height pr
 Although the model we fit has a low MSE, the real life implication may be undermined. From the correlation matrix, we used DPD, APD (wave period) as parameters which has a correlation with WVHT very close to 1. DPD APD are essentially wave data, to prevent overfitting and make our model work without wave data, we created a different set of models without using DPD and APD (prediction.ipynb).
 
 1. Data analysis
-
+We used the data from station 41053 San Juan, PR from 2020 to 2023. With DPD and APD removed, and after data cleaning (removing data codes 99, 999), the number of rows is 29864. From the correlation matrix, we see that WTMP and ATMP (water temperature and air temperature) has a significant impact of -0.28 and -0.3 on the wave height.
 2. Model Fitting
-
+Linear model: R-squared: 0.14619261256111482
+KNN Regressor: R-squared: 0.7263822957955518
+The linear model is not performing well, with an R-squared of 0.146, the KNN regressor performed a lot better, with R-squared of 0.726. Fine tuning the models hyperparameters will help, but it will not change the accuracy significantly.
+CNN: 
 
 ### **Future plans to the model**:
 1. Expanding data selection:
-
+We will expand our data to include more years from our data, ideally from 2009 to 2023 to analyze the impact of time on the wave height. Also we will try to train the model on more stations across the world with station data included (Site elevation, Water depth, Air temp height etc.) So our model can be used not only within a certain region, but ideally across the world.
 2. Test with other models:
-
+We will try some other models such as XGBoost, Random Forest, SVM and utilize some deep learning tools to increase the accuracy.
 3. Feature Engineering:
-
+For the continuous data from the stations there isn't much to do for feature engineering, but with data across different station included, we can add features to capture the geographical data from the stations to provide additional information to improve accuracy.
 
 
 
