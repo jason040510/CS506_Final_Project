@@ -108,7 +108,8 @@ We used the data from station 41053 San Juan, PR from 2020 to 2023. With DPD and
 Linear model: R-squared: 0.14619261256111482
 KNN Regressor: R-squared: 0.7263822957955518
 The linear model is not performing well, with an R-squared of 0.146, the KNN regressor performed a lot better, with R-squared of 0.726. Fine tuning the models hyperparameters will help, but it will not change the accuracy significantly.
-CNN: 
+CNN: R-squared: 0.4581101018
+The CNN model has an R-squared of 0.4581101018, with small model size and small number of epoch. CNN is highly effective at automatically extracting complex features from data, which makes them ideal for identifying patterns in wave height prediction. CNN can capture non-linear relationships in data through convolutional and activation layers, which is very suitable for oceanographic data. This is the initial model without fine tuning. After finalizing the feature engineering, it is expected that after fine tuning the model will have a better performance at accuracy.
 
 ### **Future plans to the model**:
 1. Expanding data selection:
