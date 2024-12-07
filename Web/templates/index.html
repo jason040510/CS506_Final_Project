@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hunt Down YOUR Wave</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script> <!-- For the calendar -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Hunt Down YOUR Wave</h1>
+        <div class="main-layout">
+            <!-- Left Section: Inputs -->
+            <div class="left-section">
+                <div class="form-group">
+                    <label for="waveHeight">Wave height (m):</label>
+                    <input type="number" id="waveHeight" name="wave_height" step="0.01" placeholder="Enter desired wave height" required>
+                </div>
+                <div class="form-group">
+                    <label for="numDays">Get away for (days):</label>
+                    <input type="number" id="numDays" name="num_days" min="1" placeholder="Enter number of days" required>
+                </div>
+                <div class="form-group">
+                    <label for="calendar">Select Vacation Range:</label>
+                    <input id="calendar" placeholder="Select date range">
+                </div>
+                <button type="button" class="btn" onclick="findWaves()">Find Waves</button>
+            </div>
+
+            <!-- Right Section: Suggestions -->
+            <div class="right-section">
+                <h2>Suggestions & Output</h2>
+                <div id="suggestionBox"></div>
+            </div>
+
+            <!-- Bottom Section: Picture -->
+            <div class="bottom-section">
+                <h2>Picture</h2>
+                <div id="imageBox">
+                    <!-- Replace the file path with the actual URL or relative path -->
+                    <img src="/static/remagic_cover.jpeg" alt="Destination" style="max-width: 100%; border-radius: 8px;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Flatpickr Calendar for selecting date ranges
+        flatpickr("#calendar", {
+            mode: "range",
+            dateFormat: "Y-m-d"
+        });
+
+        async function findWaves() {
+            const waveHeight = document.getElementById('waveHeight').value;
+            const numDays = document.getElementById('numDays').value;
+            const dateRange = document.getElementById('calendar').value;
+
+            if (!waveHeight || !numDays || !dateRange) {
+                alert('Please fill out all fields!');
+                return;
+            }
+
+            const [startDate, endDate] = dateRange.split(" to ");
+            try {
+                const response = await axios.post('/get_predictions', {
+                    wave_height: waveHeight,
+                    num_days: numDays,
+                    start_date: startDate,
+                    end_date: endDate
+                });
+
+                const resultData = response.data;
+                document.getElementById('suggestionBox').innerHTML = `<p>${resultData.message}</p>` + (resultData.html || '');
+            } catch (error) {
+                const errorMessage = error.response?.data?.error || 'An unexpected error occurred.';
+                document.getElementById('suggestionBox').innerHTML = `<p style="color: red;">${errorMessage}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
