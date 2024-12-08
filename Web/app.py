@@ -59,22 +59,27 @@ def get_predictions():
         # Extract matches (if returned as a key in the response)
         matches = response.get('matches', [])
 
-        # Calculate the average water temperature and get an outfit suggestion
-        avg_temp = vacation_data['WTMP_pred'].mean()
-        outfit_suggestion = get_outfit_suggestion(avg_temp)
+        # Calculate the average water temperature for the best vacation window
+        best_window = response.get('best_window', None)
+        if best_window is not None:
+            avg_temp = best_window['WTMP_pred'].mean()
+            outfit_suggestion = get_outfit_suggestion(avg_temp)
+            outfit_message = f"For an average water temperature of {avg_temp:.2f}°C: {outfit_suggestion}"
+        else:
+            outfit_message = "No outfit suggestion available."
 
         # Include outfit suggestion in the response
         return jsonify({
             'message': response.get('message', "Here are the top matches:"),
             'html': response.get('html', "<br>".join(matches)),
-            'outfit_suggestion': f"For an average water temperature of {avg_temp:.2f}°C: {outfit_suggestion}"
+            'outfit_suggestion': outfit_message
         })
 
     except ValueError as ve:
         return jsonify({'error': f"Input Error: {str(ve)}"}), 400
     except Exception as e:
         return jsonify({'error': f"Unexpected Error: {str(e)}"}), 500
-
+    
 def get_outfit_suggestion(temp):
     """
     Suggest a surfing outfit based on the water temperature.
@@ -92,28 +97,25 @@ def get_outfit_suggestion(temp):
 
 def suggest_vacation_windows(data, wave_height, num_days):
     """
-    Suggest the top 3 vacation windows of `num_days` consecutive days
+    Suggest the top 3 vacation windows of `num_days` consecutive days 
     based on wave height differences within the given range.
     """
     try:
-        # Calculate the absolute difference between `yhat` and wave height
         data['diff'] = abs(data['yhat'] - wave_height)
-
-        # Find all possible `num_days` vacation windows
         vacation_windows = []
         for i in range(len(data) - num_days + 1):
             window = data.iloc[i:i + num_days]
             if len(window) == num_days:
                 min_diff = window['diff'].sum()
                 vacation_windows.append((window, min_diff))
-
-        # Sort vacation windows by total difference and select the top 3
+        
+        # Sort and pick the top 3
         top_windows = sorted(vacation_windows, key=lambda x: x[1])[:3]
 
         if not top_windows:
-            return {"message": "No suitable vacation windows found.", "html": ""}
+            return {'message': "No suitable vacation windows found.", 'html': "", 'best_window': None}
 
-        # Format suggestions
+        best_window = top_windows[0][0]  # The best window is the first in sorted list
         suggestions = []
         for window, _ in top_windows:
             suggestion = [
@@ -124,11 +126,12 @@ def suggest_vacation_windows(data, wave_height, num_days):
             suggestions.append("<br>".join(suggestion))
 
         return {
-            "message": "Here are the top 3 vacation windows:",
-            "html": "<br><br>".join(suggestions)
+            'message': "Here are the top 3 vacation windows:",
+            'html': "<br><br>".join(suggestions),
+            'best_window': best_window
         }
     except Exception as e:
-        return {"error": f"Error suggesting vacation windows: {str(e)}"}
+        return {'message': f"Error suggesting vacation windows: {str(e)}", 'html': "", 'best_window': None}
 
 def suggest_alternative_dates(data, start_date, end_date, wave_height, num_days):
     """

@@ -72,7 +72,7 @@ h1 {
 .middle-section {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 10px; /* Reduce the gap between Best Dates and Surfing Outfit */
   padding: 24px;
   border: 1px solid #ddd;
   border-radius: 8px;
@@ -89,6 +89,7 @@ h1 {
   background: #fff;
   overflow-y: auto;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-top: 10px; /* Slight spacing above the block */
 }
 
 .surfing-outfit {
@@ -98,16 +99,19 @@ h1 {
   border-radius: 8px;
   background: #fff;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-top: 10px; /* Slight spacing above the block */
 }
+
 
 .best-dates h2, .surfing-outfit h2 {
-  font-size: 20px;
+  font-size: 20px; /* Reduce font size slightly */
   font-weight: bold;
-  margin-bottom: 10px;
+  margin-bottom: 8px; /* Reduce spacing below titles */
 }
 
+
 #suggestionBox, #wardrobeBox {
-  margin-top: 10px;
+  margin-top: 5px; /* Reduce spacing above the content */
   font-size: 16px;
   line-height: 1.6; /* Better readability */
 }
