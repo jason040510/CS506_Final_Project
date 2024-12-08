@@ -13,8 +13,9 @@
     <div class="container">
         <h1>Hunt Down YOUR Wave</h1>
         <div class="main-layout">
-            <!-- Left Section: Inputs -->
+            <!-- Left Section: Inputs and Calendar -->
             <div class="left-section">
+                <h2>Vacation Planner</h2>
                 <div class="form-group">
                     <label for="waveHeight">Wave height (m):</label>
                     <input type="number" id="waveHeight" name="wave_height" step="0.01" placeholder="Enter desired wave height" required>
@@ -24,24 +25,23 @@
                     <input type="number" id="numDays" name="num_days" min="1" placeholder="Enter number of days" required>
                 </div>
                 <div class="form-group">
-                    <label for="calendar">Select Vacation Range:</label>
-                    <input id="calendar" placeholder="Select date range">
+                    <h2>Calendar</h2>
+                    <div id="calendar"></div>
                 </div>
-                <button type="button" class="btn" onclick="findWaves()">Find Waves</button>
+                <button type="button" class="btn" id="findButton" onclick="findWaves()">Find Waves</button>
             </div>
 
-            <!-- Right Section: Suggestions -->
-            <div class="right-section">
+            <!-- Middle Section: Suggestions -->
+            <div class="middle-section">
                 <h2>Suggestions & Output</h2>
-                <div id="suggestionBox"></div>
+                <div id="suggestionBox">Your suggestions will appear here...</div>
             </div>
 
-            <!-- Bottom Section: Picture -->
-            <div class="bottom-section">
+            <!-- Right Section: Picture -->
+            <div class="right-section">
                 <h2>Picture</h2>
                 <div id="imageBox">
-                    <!-- Replace the file path with the actual URL or relative path -->
-                    <img src="/static/remagic_cover.jpeg" alt="Destination" style="max-width: 100%; border-radius: 8px;">
+                    <img src="/static/remagic_cover.jpeg" alt="Destination Picture" style="max-width: 100%; border-radius: 8px;">
                 </div>
             </div>
         </div>
@@ -49,22 +49,29 @@
 
     <script>
         // Initialize Flatpickr Calendar for selecting date ranges
-        flatpickr("#calendar", {
-            mode: "range",
-            dateFormat: "Y-m-d"
+        const calendar = flatpickr("#calendar", {
+            inline: true, // Always display the calendar
+            mode: "range", // Allow range selection
+            dateFormat: "Y-m-d", // Use YYYY-MM-DD format
         });
 
         async function findWaves() {
             const waveHeight = document.getElementById('waveHeight').value;
             const numDays = document.getElementById('numDays').value;
-            const dateRange = document.getElementById('calendar').value;
+            const selectedDates = calendar.selectedDates;
+            const findButton = document.getElementById('findButton');
 
-            if (!waveHeight || !numDays || !dateRange) {
-                alert('Please fill out all fields!');
+            if (!waveHeight || !numDays || selectedDates.length < 2) {
+                alert('Please fill out all fields and select a date range!');
                 return;
             }
 
-            const [startDate, endDate] = dateRange.split(" to ");
+            const startDate = selectedDates[0].toISOString().split('T')[0]; // Get start date
+            const endDate = selectedDates[1].toISOString().split('T')[0];   // Get end date
+
+            // Disable the button to prevent multiple requests
+            findButton.disabled = true;
+
             try {
                 const response = await axios.post('/get_predictions', {
                     wave_height: waveHeight,
@@ -74,10 +81,24 @@
                 });
 
                 const resultData = response.data;
+
+                // Handle and display recommendations
+                // if (resultData.recommendations && resultData.recommendations.length > 0) {
+                //     document.getElementById('suggestionBox').innerHTML = `
+                //         <p>${resultData.message}</p>
+                //         <ul>${resultData.recommendations.map(rec => `<li>${rec}</li>`).join('')}</ul>
+                //     `;
+                // } else {
+                //     document.getElementById('suggestionBox').innerHTML = "<p>No recommendations found.</p>";
+                // }
                 document.getElementById('suggestionBox').innerHTML = `<p>${resultData.message}</p>` + (resultData.html || '');
+
             } catch (error) {
                 const errorMessage = error.response?.data?.error || 'An unexpected error occurred.';
                 document.getElementById('suggestionBox').innerHTML = `<p style="color: red;">${errorMessage}</p>`;
+            } finally {
+                // Re-enable the button after processing
+                findButton.disabled = false;
             }
         }
     </script>
