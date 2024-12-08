@@ -33,8 +33,14 @@
 
             <!-- Middle Section: Suggestions -->
             <div class="middle-section">
-                <h2>Best Dates</h2>
-                <div id="suggestionBox">Let's find your wave</div>
+                <div class="best-dates">
+                    <h2>Best Surfing Dates</h2>
+                    <div id="suggestionBox">Let's find your wave</div>
+                </div>
+                <div class="surfing-outfit">
+                    <h2>Best surfing outfit</h2>
+                    <div id="wardrobeBox">Suggestions will appear here...</div>
+                </div>
             </div>
 
             <!-- Right Section: Picture -->
@@ -82,17 +88,8 @@
 
                 const resultData = response.data;
 
-                // Handle and display recommendations
-                // if (resultData.recommendations && resultData.recommendations.length > 0) {
-                //     document.getElementById('suggestionBox').innerHTML = `
-                //         <p>${resultData.message}</p>
-                //         <ul>${resultData.recommendations.map(rec => `<li>${rec}</li>`).join('')}</ul>
-                //     `;
-                // } else {
-                //     document.getElementById('suggestionBox').innerHTML = "<p>No recommendations found.</p>";
-                // }
                 document.getElementById('suggestionBox').innerHTML = `<p>${resultData.message}</p>` + (resultData.html || '');
-
+                document.getElementById('wardrobeBox').innerHTML = `<p>${resultData.outfit_suggestion}</p>`;
             } catch (error) {
                 const errorMessage = error.response?.data?.error || 'An unexpected error occurred.';
                 document.getElementById('suggestionBox').innerHTML = `<p style="color: red;">${errorMessage}</p>`;

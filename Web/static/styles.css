@@ -70,6 +70,9 @@ h1 {
 
 /* Middle Section */
 .middle-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
   padding: 24px;
   border: 1px solid #ddd;
   border-radius: 8px;
@@ -78,16 +81,35 @@ h1 {
   text-align: center;
 }
 
-.middle-section h2 {
-  font-size: 24px; /* Larger section headings */
-  font-weight: bold;
-  margin-bottom: 15px;
+.best-dates {
+  flex: 3; /* Allocate 3/4 of the height */
+  border: 1px solid #ccc;
+  padding: 15px;
+  border-radius: 8px;
+  background: #fff;
+  overflow-y: auto;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-#suggestionBox {
-  margin-top: 15px;
+.surfing-outfit {
+  flex: 1; /* Allocate 1/4 of the height */
+  border: 1px solid #ccc;
+  padding: 15px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.best-dates h2, .surfing-outfit h2 {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+#suggestionBox, #wardrobeBox {
+  margin-top: 10px;
   font-size: 16px;
-  line-height: 1.6; /* Better readability for suggestions */
+  line-height: 1.6; /* Better readability */
 }
 
 /* Right Section */
