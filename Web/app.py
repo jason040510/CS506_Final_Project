@@ -5,7 +5,7 @@ import pandas as pd
 app = Flask(__name__)
 
 # Load CSV data
-data = pd.read_csv('forecast.csv')  # Ensure this file exists and is correctly formatted
+data = pd.read_csv('../forecast.csv')  # Ensure this file exists and is correctly formatted
 
 @app.route('/')
 def index():
@@ -15,7 +15,8 @@ def index():
 @app.route('/get_predictions', methods=['POST'])
 def get_predictions():
     """
-    Handle predictions based on user input and suggest alternatives if no matches are found.
+    Handle predictions based on user input, filter by wave height, 
+    and include water temperature in the output.
     """
     try:
         # Parse JSON request data
@@ -34,7 +35,8 @@ def get_predictions():
         end_date = datetime.strptime(vacation_end_date, "%Y-%m-%d")
 
         # Validate dataset columns
-        required_columns = {'station_id', 'ds', 'yhat', 'yhat_lower', 'yhat_upper'}
+        required_columns = {'station_id', 'ds', 'yhat', 'yhat_lower', 'yhat_upper', 
+                            'WTMP_pred', 'WTMP_pred_lower', 'WTMP_pred_upper'}
         if not required_columns.issubset(data.columns):
             raise ValueError("Dataset does not have the required columns.")
 
@@ -49,95 +51,104 @@ def get_predictions():
 
         # If no data in the selected range, suggest 3 closest dates outside the range
         if vacation_data.empty:
-            # Calculate the center of the selected range
-            selected_range_center = start_date + (end_date - start_date) / 2
+            return suggest_alternative_dates(data, start_date, end_date, wave_height, num_days)
 
-            # Exclude dates within the range and find closest dates
-            data_outside_range = data[
-                (data['full_date'] < start_date) | (data['full_date'] > end_date)
-            ].copy()
-            if data_outside_range.empty:
-                raise ValueError("No data available for alternative suggestions.")
-
-            # Calculate the absolute difference between each date and the range center
-            data_outside_range['date_diff'] = abs(data_outside_range['full_date'] - selected_range_center)
-            closest_dates = data_outside_range.nsmallest(3, 'date_diff')
-
-            # Format the suggestions
-            suggestions = [
-                f"{row['full_date'].strftime('%Y-%m-%d')} at station {row['station_id']} "
-                f"(Wave height: {row['yhat']:.2f}m)"
-                for _, row in closest_dates.iterrows()
-            ]
-            return jsonify({
-                'message': "No matches found in the selected range. Here are 3 alternative suggestions:",
-                'recommendations': suggestions
-            })
-
-        # Calculate the absolute difference between `yhat` and `wave_height`
-        vacation_data.loc[:, 'diff'] = abs(vacation_data['yhat'] - wave_height)
-
-        # Find matches for consecutive days
-        consecutive_matches = find_consecutive_matches(vacation_data, num_days)
-        if consecutive_matches:
-            return jsonify({
-                'message': "Here are your best matches!",
-                'html': consecutive_matches
-            })
-
-        # No consecutive matches found
-        return jsonify({'message': "No matches found for the specified range."})
+        # Find the best `num_days` vacation windows
+        return suggest_vacation_windows(vacation_data, wave_height, num_days)
 
     except ValueError as ve:
         return jsonify({'error': f"Input Error: {str(ve)}"}), 400
     except Exception as e:
         return jsonify({'error': f"Unexpected Error: {str(e)}"}), 500
 
-
-def find_consecutive_matches(vacation_data, num_days):
+def suggest_vacation_windows(data, wave_height, num_days):
     """
-    Find matches for consecutive days based on wave height differences and the desired number of days.
+    Suggest the top 3 vacation windows of `num_days` consecutive days 
+    based on wave height differences within the given range.
     """
     try:
-        # Sort data by full_date to ensure chronological order
-        vacation_data = vacation_data.sort_values('full_date')
+        # Calculate the absolute difference between `yhat` and wave height
+        data['diff'] = abs(data['yhat'] - wave_height)
 
-        # Keep track of the current streak of consecutive days
-        current_streak = []
-        all_matches = []
+        # Find all possible `num_days` vacation windows
+        vacation_windows = []
+        for i in range(len(data) - num_days + 1):
+            window = data.iloc[i:i + num_days]
+            if len(window) == num_days:
+                min_diff = window['diff'].sum()
+                vacation_windows.append((window, min_diff))
 
-        for i in range(len(vacation_data)):
-            if not current_streak:
-                # Start a new streak with the current row
-                current_streak.append(vacation_data.iloc[i])
-            else:
-                # Get the last date in the current streak
-                last_date = current_streak[-1]['full_date']
+        # Sort vacation windows by total difference and select the top 3
+        top_windows = sorted(vacation_windows, key=lambda x: x[1])[:3]
 
-                # Check if the current row's date is exactly one day after the last date
-                if vacation_data.iloc[i]['full_date'] == last_date + timedelta(days=1):
-                    current_streak.append(vacation_data.iloc[i])
-                else:
-                    # If not consecutive, reset the streak
-                    current_streak = [vacation_data.iloc[i]]
+        if not top_windows:
+            return jsonify({'message': "No suitable vacation windows found.", 'html': ""})
 
-            # If the streak reaches the desired number of days, store it as a match
-            if len(current_streak) == num_days:
-                # Format match details
-                match_details = [
-                    f"{row['full_date'].strftime('%Y-%m-%d')} at station {row['station_id']} "
-                    f"(Wave height: {row['yhat']:.2f}m)"
-                    for _, row in enumerate(current_streak)
-                ]
-                all_matches.append("<br>".join(match_details))
-                current_streak = []  # Reset streak after recording a match
+        # Format suggestions
+        suggestions = []
+        for window, _ in top_windows:
+            suggestion = [
+                f"{row['full_date'].strftime('%Y-%m-%d')} - Station {row['station_id']}, "
+                f"Wave height: {row['yhat']:.2f}m, Water Temp: {row['WTMP_pred']:.2f}°C"
+                for _, row in window.iterrows()
+            ]
+            suggestions.append("<br>".join(suggestion))
 
-        # Return all matches formatted as HTML
-        return "<br><br>".join(all_matches) if all_matches else None
-
+        return jsonify({
+            'message': "Here are the top 3 vacation windows:",
+            'html': "<br><br>".join(suggestions)
+        })
     except Exception as e:
-        return f"Error finding consecutive matches: {str(e)}"
+        return jsonify({'error': f"Error suggesting vacation windows: {str(e)}"}), 500
 
+def suggest_alternative_dates(data, start_date, end_date, wave_height, num_days):
+    """
+    Suggest the 3 best permutations of `num_days` consecutive days after the selected range
+    based on wave height differences.
+    """
+    try:
+        # Filter data after the selected range
+        future_data = data[data['full_date'] > end_date].copy()
+
+        # Calculate the absolute difference between `yhat` and the desired wave height
+        future_data['diff'] = abs(future_data['yhat'] - wave_height)
+
+        # Sort future data by date to ensure chronological order
+        future_data = future_data.sort_values('full_date').reset_index(drop=True)
+
+        # Find the best permutations of `num_days` consecutive days
+        vacation_windows = []
+        for i in range(len(future_data) - num_days + 1):
+            streak = future_data.iloc[i:i + num_days]
+            if len(streak) == num_days:
+                total_diff = streak['diff'].sum()
+                vacation_windows.append((streak, total_diff))
+
+        # Sort the matches by total difference and pick the top 3
+        top_windows = sorted(vacation_windows, key=lambda x: x[1])[:3]
+
+        if not top_windows:
+            return jsonify({
+                'message': "No alternative sets of dates found.",
+                'html': ""
+            })
+
+        # Format suggestions
+        suggestions = []
+        for window, _ in top_windows:
+            suggestion = [
+                f"{row['full_date'].strftime('%Y-%m-%d')} - Station {row['station_id']}, "
+                f"Wave height: {row['yhat']:.2f}m, Water Temp: {row['WTMP_pred']:.2f}°C"
+                for _, row in window.iterrows()
+            ]
+            suggestions.append("<br>".join(suggestion))
+
+        return jsonify({
+            'message': "Here are the top 3 alternative vacation windows:",
+            'html': "<br><br>".join(suggestions)
+        })
+    except Exception as e:
+        return jsonify({'error': f"Error suggesting alternative dates: {str(e)}"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
