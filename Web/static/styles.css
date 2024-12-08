@@ -4,55 +4,106 @@ body {
   padding: 0;
   background: #f4f4f9;
   color: #333;
+  height: 100vh; /* Use full viewport height */
 }
 
 .container {
-  max-width: 1200px;
-  margin: 50px auto;
+  max-width: 95%; /* Utilize more screen space */
+  height: 90vh; /* Take up most of the viewport height */
+  margin: 20px auto; /* Center horizontally and reduce top/bottom margin */
   padding: 20px;
   background: white;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
+  display: flex;
+  flex-direction: column; /* Stack children vertically */
+  justify-content: space-between;
 }
 
 h1 {
   text-align: center;
-  color: #4CAF50;
+  color: #0F52BA; /* Sapphire Blue color */
   margin-bottom: 20px;
+  font-size: 32px; /* Larger font size for the main title */
 }
 
+/* Layout for the main sections */
 .main-layout {
   display: grid;
-  grid-template-columns: 1fr 2fr 1fr; /* Three columns: Left, Middle, Right */
+  grid-template-columns: 1.2fr 2fr 1.2fr; /* Proportional columns for Left, Middle, and Right */
   gap: 20px;
+  height: calc(100% - 80px); /* Fill the remaining height */
 }
 
 /* Left Section */
 .left-section {
-  padding: 20px;
+  padding: 24px;
   border: 1px solid #ddd;
   border-radius: 8px;
   background: #f9f9f9;
+  overflow-y: auto; /* Enable scrolling if content overflows */
+  text-align: center; /* Center-align text and inputs */
+}
+
+.left-section .form-group {
+  display: flex;
+  flex-direction: column; /* Stack inputs vertically */
+  align-items: center; /* Horizontally center inputs */
+  margin-bottom: 24px; /* Add spacing between form groups */
+}
+
+.left-section input {
+  margin-top: 10px; /* Add spacing between input fields */
+  width: 80%; /* Make inputs wider for better usability */
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) inset;
+}
+
+.left-section h2 {
+  font-size: 24px; /* Larger section headings */
+  font-weight: bold;
+  margin-bottom: 15px;
 }
 
 /* Middle Section */
 .middle-section {
-  padding: 20px;
+  padding: 24px;
   border: 1px solid #ddd;
   border-radius: 8px;
   background: #f9f9f9;
+  overflow-y: auto;
+  text-align: center;
+}
+
+.middle-section h2 {
+  font-size: 24px; /* Larger section headings */
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+#suggestionBox {
+  margin-top: 15px;
+  font-size: 16px;
+  line-height: 1.6; /* Better readability for suggestions */
 }
 
 /* Right Section */
 .right-section {
-  padding: 20px;
+  padding: 24px;
   border: 1px solid #ddd;
   border-radius: 8px;
   background: #f9f9f9;
+  overflow-y: auto;
+  text-align: center;
 }
 
-#suggestionBox, #imageBox {
-  margin-top: 15px;
+.right-section h2 {
+  font-size: 24px; /* Larger section headings */
+  font-weight: bold;
+  margin-bottom: 15px;
 }
 
 #imageBox img {
@@ -64,17 +115,19 @@ h1 {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+/* Button Styles */
 button.btn {
   margin-top: 20px;
   padding: 10px 20px;
   font-size: 16px;
-  background: #4CAF50;
+  background: #0F52BA; /* Sapphire Blue color */
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  transition: background 0.3s ease;
 }
 
 button.btn:hover {
-  background: #45A049;
+  background: #0D47A1; /* A slightly darker shade of blue for hover */
 }
