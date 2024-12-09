@@ -1,6 +1,9 @@
 from datetime import datetime, timedelta
 from flask import Flask, jsonify, request, render_template
 import pandas as pd
+from make_images import make_images
+import os
+ 
 
 app = Flask(__name__)
 
@@ -16,7 +19,7 @@ def index():
 def get_predictions():
     """
     Handle predictions based on user input, filter by wave height,
-    and include water temperature and outfit suggestions.
+    and include water temperature, outfit suggestions, and forecast graphs.
     """
     try:
         # Parse JSON request data
@@ -56,23 +59,50 @@ def get_predictions():
         # Find the best `num_days` vacation windows
         response = suggest_vacation_windows(vacation_data, wave_height, num_days)
 
-        # Extract matches (if returned as a key in the response)
-        matches = response.get('matches', [])
+        # Get the best window
+        best_window = response.get('best_window', None)
+        if best_window is None or best_window.empty:
+            return jsonify({
+                'message': "No suitable vacation windows found.",
+                'html': "No matches available.",
+                'outfit_suggestion': "No outfit suggestion available.",
+                'graphs': []
+            })
+
+        # Get the station ID and the date range from the best window
+        best_station_id = best_window.iloc[0]['station_id']
+        best_window_start = best_window['full_date'].min().strftime('%Y-%m-%d')
+        best_window_end = best_window['full_date'].max().strftime('%Y-%m-%d')
+
+        # Generate graphs for the best station and time range
+        graph_paths = []
+        input_file = f"../CleanedData/{best_station_id}.csv"  # Adjust for relative path
+        if not os.path.exists(input_file):
+            print(f"File not found: {input_file}")
+            return jsonify({
+                'message': "File for the selected station is missing.",
+                'html': "No graphs generated.",
+                'outfit_suggestion': "No outfit suggestion available.",
+                'graphs': []
+            })
+
+        try:
+            wvht_graph, wtmp_graph = make_images(input_file, best_station_id, best_window_start, best_window_end)
+            graph_paths.append({'location': best_station_id, 'wvht': wvht_graph, 'wtmp': wtmp_graph})
+        except Exception as e:
+            print(f"Error generating graphs for {best_station_id}: {e}")
 
         # Calculate the average water temperature for the best vacation window
-        best_window = response.get('best_window', None)
-        if best_window is not None:
-            avg_temp = best_window['WTMP_pred'].mean()
-            outfit_suggestion = get_outfit_suggestion(avg_temp)
-            outfit_message = f"For an average water temperature of {avg_temp:.2f}°C: {outfit_suggestion}"
-        else:
-            outfit_message = "No outfit suggestion available."
+        avg_temp = best_window['WTMP_pred'].mean()
+        outfit_suggestion = get_outfit_suggestion(avg_temp)
+        outfit_message = f"For an average water temperature of {avg_temp:.2f}°C: {outfit_suggestion}"
 
-        # Include outfit suggestion in the response
+        # Return response with the generated graphs and suggestions
         return jsonify({
-            'message': response.get('message', "Here are the top matches:"),
-            'html': response.get('html', "<br>".join(matches)),
-            'outfit_suggestion': outfit_message
+            'message': response.get('message', "Here is your best match:"),
+            'html': response.get('html', ""),
+            'outfit_suggestion': outfit_message,
+            'graphs': graph_paths
         })
 
     except ValueError as ve:
@@ -103,20 +133,25 @@ def suggest_vacation_windows(data, wave_height, num_days):
     try:
         data['diff'] = abs(data['yhat'] - wave_height)
         vacation_windows = []
+        station_ids = set()  # Use a set to hold unique station IDs
+        
         for i in range(len(data) - num_days + 1):
             window = data.iloc[i:i + num_days]
             if len(window) == num_days:
                 min_diff = window['diff'].sum()
                 vacation_windows.append((window, min_diff))
+                # Collect unique station IDs from the window
+                station_ids.update(window['station_id'].unique())
         
         # Sort and pick the top 3
         top_windows = sorted(vacation_windows, key=lambda x: x[1])[:3]
 
         if not top_windows:
-            return {'message': "No suitable vacation windows found.", 'html': "", 'best_window': None}
+            return {'message': "No suitable vacation windows found.", 'html': "", 'best_window': None, 'station_ids': []}
 
         best_window = top_windows[0][0]  # The best window is the first in sorted list
         suggestions = []
+
         for window, _ in top_windows:
             suggestion = [
                 f"{row['full_date'].strftime('%Y-%m-%d')} - {row['station_id'].split('_')[0]}, "
@@ -128,10 +163,11 @@ def suggest_vacation_windows(data, wave_height, num_days):
         return {
             'message': "Here are the top 3 vacation windows:",
             'html': "<br><br>".join(suggestions),
-            'best_window': best_window
+            'best_window': best_window,
+            'station_ids': list(station_ids)  # Convert set to list for output
         }
     except Exception as e:
-        return {'message': f"Error suggesting vacation windows: {str(e)}", 'html': "", 'best_window': None}
+        return {'message': f"Error suggesting vacation windows: {str(e)}", 'html': "", 'best_window': None, 'station_ids': []}
 
 def suggest_alternative_dates(data, start_date, end_date, wave_height, num_days):
     """
@@ -178,6 +214,28 @@ def suggest_alternative_dates(data, start_date, end_date, wave_height, num_days)
         }
     except Exception as e:
         return {"error": f"Error suggesting alternative dates: {str(e)}"}
+    
+import os
+import shutil
+
+@app.route('/clear_images', methods=['POST'])
+def clear_images():
+    """
+    Clear all files in the forecast_images folder.
+    """
+    try:
+        folder_path = './static/forecast_images'  # Adjust the path if necessary
+        if os.path.exists(folder_path):
+            # Remove all files in the folder
+            for filename in os.listdir(folder_path):
+                file_path = os.path.join(folder_path, filename)
+                if os.path.isfile(file_path):
+                    os.remove(file_path)
+            return jsonify({'message': 'Forecast images cleared successfully.'})
+        else:
+            return jsonify({'error': 'Forecast images folder does not exist.'}), 400
+    except Exception as e:
+        return jsonify({'error': f'Failed to clear forecast images: {str(e)}'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

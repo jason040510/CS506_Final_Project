@@ -28,6 +28,7 @@
                     <h2>Select your days off</h2>
                     <div id="calendar"></div>
                 </div>
+                <button type="button" class="btn" id="resetButton" onclick="resetInputs()">Reset</button>
                 <button type="button" class="btn" id="findButton" onclick="findWaves()">Find Waves</button>
             </div>
 
@@ -88,8 +89,34 @@
 
                 const resultData = response.data;
 
+                // Update the suggestion box
                 document.getElementById('suggestionBox').innerHTML = `<p>${resultData.message}</p>` + (resultData.html || '');
+
+                // Update the wardrobe suggestion
                 document.getElementById('wardrobeBox').innerHTML = `<p>${resultData.outfit_suggestion}</p>`;
+
+                // Handle the graph images
+                const imageBox = document.getElementById('imageBox');
+                imageBox.innerHTML = ''; // Clear previous images
+                if (resultData.graphs && resultData.graphs.length > 0) {
+                    resultData.graphs.forEach(graph => {
+                        const location = graph.location;
+                        const wvhtImg = document.createElement('img');
+                        wvhtImg.src = graph.wvht;
+                        wvhtImg.alt = `${location} - Wave Height Prediction`;
+                        wvhtImg.style = 'max-width: 100%; margin-bottom: 10px; border-radius: 8px;';
+
+                        const wtmpImg = document.createElement('img');
+                        wtmpImg.src = graph.wtmp;
+                        wtmpImg.alt = `${location} - Water Temperature Prediction`;
+                        wtmpImg.style = 'max-width: 100%; margin-bottom: 10px; border-radius: 8px;';
+
+                        imageBox.appendChild(wvhtImg);
+                        imageBox.appendChild(wtmpImg);
+                    });
+                } else {
+                    imageBox.innerHTML = `<p>No images available for the selected period.</p>`;
+                }
             } catch (error) {
                 const errorMessage = error.response?.data?.error || 'An unexpected error occurred.';
                 document.getElementById('suggestionBox').innerHTML = `<p style="color: red;">${errorMessage}</p>`;
@@ -98,6 +125,30 @@
                 findButton.disabled = false;
             }
         }
+
+        async function resetInputs() {
+        // Clear wave height input
+        document.getElementById('waveHeight').value = '';
+
+        // Clear number of days input
+        document.getElementById('numDays').value = '';
+
+        // Clear selected dates in the calendar
+        calendar.clear();
+
+        // Reset any output or suggestions
+        document.getElementById('suggestionBox').innerHTML = "Let's find your wave";
+        document.getElementById('wardrobeBox').innerHTML = "Suggestions will appear here...";
+        document.getElementById('imageBox').innerHTML = '<p>No images available for the selected period.</p>';
+
+        // Clear the forecast_images folder via backend
+        try {
+            const response = await axios.post('/clear_images');
+            console.log(response.data.message);
+        } catch (error) {
+            console.error('Failed to clear forecast images:', error.response?.data?.error || error.message);
+        }
+    }
     </script>
 </body>
 </html>
