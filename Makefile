@@ -28,8 +28,8 @@ run_website:
 	cd $(WEB_DIR) && ../$(VENV_DIR)/bin/flask run --host=0.0.0.0 --port=3000
 
 # Clean up: remove intermediate and output files
-clean_Data:
+clean:
 	@echo "Cleaning up intermediate and output folders..."
-	rm -rf CSV_version_WaveData MergedData CleanedData
+	rm -rf CSV_version_WaveData MergedData CleanedData plots forecast.csv
 	rm -rf $(VENV_DIR)
 	@echo "All temporary and output files removed."

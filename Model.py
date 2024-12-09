@@ -1,6 +1,8 @@
 import pandas as pd
 from prophet import Prophet
 from sklearn.metrics import mean_absolute_error
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import glob
 import os
