@@ -1,0 +1,6 @@
+pandas
+prophet
+scikit-learn
+matplotlib
+flask
+datetime
