@@ -44,7 +44,7 @@ Initially, alternative models were explored but Prophet was adopted after the mi
 5. **Clean:**
    ```bash
    make clean
-
+All these commands we test in our GitHub workflow.
 ## Data Collection and Preprocessing
 
 The data for this project was sourced from the [National Data Buoy Center (NDBC)](https://www.ndbc.noaa.gov/), maintained by the National Oceanic and Atmospheric Administration (NOAA). After comparing various data sources based on completeness, data volume, and consistency, NDBC was selected for its extensive historical records and global coverage. The dataset includes multiple features, such as wave height, water temperature, and timestamps, which are essential for predictive modeling.
