@@ -84,10 +84,11 @@ Since all raw data is stored in annual units, we combined the data for each site
 ## Visualization of Data
 
 ### Correlation Matrix
-A correlation matrix was used to identify relationships between features, such as wave height and water temperature, across the dataset.
+A correlation matrix was used to identify relationships between features, such as wave height and water temperature, across the dataset. 
+![Correlation Matrix after removing outliers](image/correlation_matrix%202.png)
 
-### Wave Height Over Time
-
+### Wave Height Over Time 
+![Wave height over time](image/Trend_and_Seasonality%202.png)
 1. **Seasonal Trends:**  
    - The 30-day rolling mean (red line) reveals clear periodic fluctuations in wave height.  
    - Peaks in the rolling mean are observed at consistent intervals, suggesting a seasonal pattern likely influenced by weather changes, such as seasonal storms or varying wind speeds.  
