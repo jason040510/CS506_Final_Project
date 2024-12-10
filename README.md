@@ -1,130 +1,285 @@
-# CS506_Final_Project
-### **Project: Predicting Wave Heights Based on Wind Speed and Atmospheric Pressure**
+## Team Information
 
-#### **Midterm Presentation**: [https://youtu.be/CbM2mYb2zyw](https://youtu.be/0gZBaYmZ-kY)
+**Members:**  
+- Chuancheng Xia  
+- Ziyu Huang  
+- Ruoxi Li  
+- Yizhou Wang  
 
-#### **Goal**:
-The goal is to build a predictive model for wave heights based on wind speed, atmospheric pressure, and other relevant weather conditions. This can be valuable for maritime safety, surfing conditions, or coastal erosion management.
+**Email:**  
+- jwang12@bu.edu  
+- mlrx@bu.edu  
+- jason123@bu.edu  
+- jdhuang@bu.edu
 
-#### **Data Collection**:
-- **Wave Height Data**: Collect historical wave height data from buoys deployed by organizations such as [NOAA's National Data Buoy Center (NDBC)](https://www.ndbc.noaa.gov/) which provides real-time and historical wave measurements across the world’s oceans.
-- **Wind Speed and Atmospheric Pressure Data**: Gather historical weather data (wind speed, atmospheric pressure, and temperature) from the [OpenWeather API](https://openweathermap.org/api) or directly from NOAA’s [Weather and Oceanographic Data Center](https://www.noaa.gov/).
-- **Sea Surface Temperature Data**: Include sea surface temperature from sources like NASA’s [Ocean Color Data](https://oceancolor.gsfc.nasa.gov/).
+## Project Overview
 
-#### **Modeling**:
-- **Baseline Model**: Start with linear regression using wind speed and pressure as features to predict wave height.
-- **Advanced Model**: Implement machine learning models like Random Forest or XGBoost to capture more complex relationships between wind, pressure, and wave heights. 
-- **Time-Series Forecasting**: Use models like ARIMA or LSTM to forecast wave heights over time based on historical patterns.
+### Project Title  
+Predicting Wave Height Using Time-Series Model  
 
-#### **Data Visualization**:
-- **Wave Height Over Time**: Create time-series plots to visualize wave height fluctuations across different seasons and weather events.
-- **Wind Speed vs Wave Height**: Generate scatter plots or interactive 3D plots showing the correlation between wind speed and wave height.
-- **Geographic Heat Maps**: Show the areas where wave heights are most affected by wind speed, using a geographic heat map.
+### Goal  
+To help users identify optimal surfing locations and suitable dates based on their desired wave height and vacation periods.  
 
-#### **Test Plan**:
-- Use a **train/test split** The data choose from 2019 to 2024( 80% of the data for training, 20% for testing from ) to evaluate the performance of your predictive models.
+### Introduction  
+This project leverages datasets from 2019 to 2023, sourced from the National Data Buoy Center (NDBC), to train a forecasting model. After data cleaning, cyclic patterns tied to time were identified, which are critical in time-series forecasting. The chosen model, Prophet, effectively captures seasonality and time-based trends, enabling predictions for wave heights from 2024 to 2026.  
 
-Adressing potential issues (Oct 14, 2024):
-1. **Time Alignment**: 
-   - Ensure that all datasets (wave height, wind speed, atmospheric pressure, etc.) share a common timestamp. It’s important to choose a consistent time interval (e.g., hourly or daily) and aggregate or interpolate data to fit that interval if necessary.
-   - For missing or mismatched timestamps, we can use interpolation techniques like linear or spline interpolation to fill gaps in the dataset.
+The interactive webpage supports three user inputs: desired wave height, duration, and time period. Based on these, the system recommends optimal surfing dates and locations and provides water temperature predictions along with suggested surfing attire.  
 
-2. **Data Merging**: 
-   - After collecting data from each source, merge them on the timestamp field. Depending on the granularity of the timestamps, we may need to resample data to a consistent frequency before merging.
-   - Use outer joins to ensure we capture all relevant data, or inner joins if we only want time periods where data from all sources is available.
+Initially, alternative models were explored but Prophet was adopted after the midterm, proving to be more practical for real-world applications. Detailed discussions about the models are in the **Model** section.
 
-3. **Feature Engineering**:
-   - Consider adding lagged variables (e.g., wind speed from the previous hour or day) to capture time dependencies. This can be useful in time-series forecasting models like LSTM or ARIMA.
-   - Additionally, we can create derived features like wind pressure gradients or temperature differentials to enhance predictive power.
+## How to Build and Run the Code
 
-4. **Normalization**:
-   - Since we are collecting data from multiple sources, the units and scales might vary. Normalize or standardize your features to ensure compatibility between variables when feeding them into machine learning models.
+1. **Install Dependencies:**  
+   ```bash
+   make install
+2. **Process Data:**
+   ```bash
+   make process_data
+3. **Run Model:**
+   ```bash
+   make run_model
+4. **Run Website:**
+   ```bash
+   make run_website
+5. **Clean:**
+   ```bash
+   make clean
 
-5. **Data Quality**:
-   - Pay attention to data gaps, outliers, and inconsistencies between datasets. Automated data cleaning pipelines can help identify and rectify issues in real-time.
+## Data Collection and Preprocessing
 
-6. **Alternative Solution**
-   - If we are not able to align the data properly, we could try to find a single data source that captures the data we need.
-  
+The data for this project was sourced from the [National Data Buoy Center (NDBC)](https://www.ndbc.noaa.gov/), maintained by the National Oceanic and Atmospheric Administration (NOAA). After comparing various data sources based on completeness, data volume, and consistency, NDBC was selected for its extensive historical records and global coverage. The dataset includes multiple features, such as wave height, water temperature, and timestamps, which are essential for predictive modeling.
 
-Analysis the 2023 data from Station 42042 at 29.207 N 88.237 W (29°12'24" N 88°14'12" W)
+The objective of this project is to predict wave heights at specific time intervals along the U.S. coastline to provide recommendations for surfing enthusiasts. To ensure comprehensive coverage of popular surfing locations, data from multiple buoy stations along the West Coast, East Coast, South Bay, Hawaii, and Puerto Rico were selected. To maintain relevance and consistency for predictions aimed at 2025, the dataset was restricted to the most recent four years (2019–2023).
 
-1. Overview: To build a multiple linear regression model with wave height (WVHT) as the dependent variable, we first need to prepare the data, ensuring that the dataset includes independent variables such as wind direction (WDIR), average wind speed (WSPD), maximum gust speed (GST), dominant period (DPD), average period (APD), main wind direction (MWD), pressure (PRES), air temperature (ATMP), and water temperature (WTMP), along with wave height (WVHT). Next, we conduct exploratory data analysis (EDA) to understand relationships between variables using statistical charts and descriptive statistics, as well as to check data quality, handling missing values and outliers. Based on EDA results, we select suitable features, possibly performing feature engineering if needed. Then, we split the dataset into training and testing sets, often with a 70% training and 30% testing ratio. We use the training set to build the multiple linear regression model, which can be implemented using the LinearRegression class from Python’s sklearn library. After building the model, we evaluate its performance on the test set, focusing on metrics such as mean squared error (MSE) and the coefficient of determination (R²), and analyze residual plots to ensure the model meets the basic assumptions of linear regression. If the model performs poorly, it can be optimized by adjusting feature selection, addressing multicollinearity, or trying alternative models. Finally, we interpret the model coefficients to understand which factors have the greatest impact on wave height and provide practical application recommendations accordingly. Throughout the process, it is essential to avoid overfitting and to ensure the model’s generalizability.
-2. Correlation analysis of data
-![Correlation Matrix](image/correlation_matrix%201.png)
+### Challenges and Solutions
+- **Incomplete or Inconsistent Data Spans:**  
+  Many stations had incomplete or inconsistent time spans, necessitating a thorough screening process to identify stations with complete data for the chosen period.
 
-Box plots are used to identify and remove outliers in the data that may adversely affect the performance of the model.
-![Box Plot](image/Box_plot%201.png)
+- **Invalid or Missing Values:**  
+  A significant proportion of the data contained invalid or missing values for critical features, such as wave height and water temperature (e.g., placeholder values like `99` or `NaN`).  
 
-After removing the outliers:
-![Box Plot after removing outliers](image/Box_plot%202.png)
+To address these issues, only stations with valid and consistent historical data for the required features were included in the final dataset. This rigorous selection process ensures the reliability and accuracy of subsequent predictive modeling.
 
-![Correlation Matrix after removing outliers](image/correlation_matrix%202.png)
+## Data Processing
 
-3.Modeling
-1) linear regression model
-Model Parameters:
-[ 1.24867034e-04, 6.22953758e-02, -2.56387520e-02, -7.93630248e-04, 1.03557317e+00, 6.70419148e-05, -4.46014581e-04, 1.56621157e-02, 2.65817156e-05, -1.24772118e-02]
+### Convert TXT to CSV  
+Since all the original data is in `.txt` format, we first convert it to `.csv` format for subsequent processing. We created a function called `convert_txt_to_csv(input_folder, output_folder)` to perform this conversion. By using this function, all the raw `.txt` data in the `RawWaveData` folder is converted into the `CSV_version_WaveData` folder. During the conversion, we retained only the columns essential for our model: `#YY`, `MM`, `DD`, `WVHT`, `ATMP`, and `WTMP`.
 
-Model Intercept:
--3.386844226310629
+### Merge CSV Files for Each Station  
+Since all raw data is stored in annual units, we combined the data for each site into a single file to make it easier for the model to process later. This was achieved using the `merge_csv_files_in_subfolders(input_folder, output_folder)` function. With this function, each site now has one `.csv` file containing all its data from multiple years, stored in the `MergedData` folder.
 
-Mean Squared Error (MSE):
-0.09983868755979808
+### Clean the Data  
+1. **Remove Invalid Values:**  
+   We created a function called `drop_invalid_values(data, column, threshold=99)` to remove invalid data, such as `99` for `WVHT`.  
+   
+2. **Create a Date Column:**  
+   This function also combines the `#YY`, `MM`, and `DD` columns into a single `date` column, which is particularly useful for building the webpage.
 
-The model parameters represent the effect of each independent variable on the dependent variable (wave height, WVHT). Specifically:  
-Wind Direction (WDIR): The coefficient is 1.24867034 × 10^−4, meaning that a 1-degree increase in wind direction predicts an increase in wave height of about 0.00012 meters, a very small effect.  
-Average Wind Speed (WSPD): The coefficient is 6.22953758 × 10^−2, indicating that a 1 m/s increase in average wind speed predicts an increase in wave height of about 0.062 meters.  
-Maximum Gust Speed (GST): The coefficient is −2.56387520 × 10^−2, meaning that a 1 m/s increase in maximum gust speed predicts a decrease in wave height of about 0.026 meters. This could be because gusts are often short-lived, impacting wave height less than sustained average wind speed.  
-Dominant Period (DPD): The coefficient is 1.03557317, indicating that a 1-second increase in the dominant period predicts a significant increase in wave height of about 1.036 meters, the most influential variable.  
-Average Period (APD): The coefficient is 6.70419148 × 10^−5, suggesting that a 1-second increase in average period predicts an increase in wave height of about 0.000067 meters, which is relatively small.  
-Main Wind Direction (MWD): The coefficient is −4.46014581 × 10^−4, meaning that a 1-degree change in main wind direction predicts a decrease in wave height of about 0.00045 meters.
-Pressure (PRES): The coefficient is 1.56621157 × 10^−2, indicating that a 1 hPa increase in pressure predicts an increase in wave height of about 0.016 meters.  
-Air Temperature (ATMP): The coefficient is 2.65817156 × 10^−5, meaning that a 1°C increase in air temperature predicts an increase in wave height of about 0.000027 meters, an almost negligible effect.  
-Water Temperature (WTMP): The coefficient is −1.24772118 × 10^−2, meaning that a 1°C increase in water temperature predicts a decrease in wave height of about 0.012 meters.
-Model Intercept  
-The model intercept is −3.386844226310629, which implies that when all independent variables are zero, the predicted wave height would be −3.39 meters. However, in real situations, it is unlikely that all variables would be zero, so the intercept is more of a mathematical concept rather than of practical significance.  
-Mean Squared Error (MSE)  
+3. **Retain Maximum Wave Height Per Day:**  
+   A function called `keep_max_wvht_per_day(data)` was implemented to keep only the row with the maximum `WVHT` (Wave Height) for each day. For long-term analysis, summarizing data into daily intervals helps improve model performance. Retaining maximum values ensures that extreme events, which are significant for predictions, are not lost in the averaging process.
+
+4. **Save Cleaned Data:**  
+   The cleaned data files were saved in the `CleanedData` folder, making them ready for use in modeling.
+
+## Visualization of Data
+
+### Correlation Matrix
+A correlation matrix was used to identify relationships between features, such as wave height and water temperature, across the dataset.
+
+### Wave Height Over Time
+
+1. **Seasonal Trends:**  
+   - The 30-day rolling mean (red line) reveals clear periodic fluctuations in wave height.  
+   - Peaks in the rolling mean are observed at consistent intervals, suggesting a seasonal pattern likely influenced by weather changes, such as seasonal storms or varying wind speeds.  
+   - Wave heights exhibit higher values during certain periods of the year, indicative of predictable cycles.  
+
+2. **Volatility in Wave Height:**  
+   - The 30-day rolling standard deviation (green line) captures variations in wave height over time.  
+   - Periods of higher wave height (as seen in the rolling mean) coincide with increased volatility, indicating that extreme wave events are more common during these periods.  
+
+3. **Long-Term Trend:**  
+   - Over the observed timeframe, there is no evident long-term increase or decrease in average wave height.  
+   - Localized trends, such as short-term increases or decreases in the rolling mean, may reflect temporary weather phenomena.  
+
+4. **Extreme Events:**  
+   - The original wave height data (blue line) shows frequent spikes that rise significantly above the rolling mean, representing extreme events such as storms or cyclones.  
+   - These events occur sporadically and contribute to observed volatility in wave height.  
+
+5. **Cyclic Behavior:**  
+   - A repeating cycle of wave heights aligns with seasonal weather patterns, possibly linked to factors such as wind patterns, atmospheric pressure changes, or ocean currents.  
+
+---
+
+### Wave Height Distribution
+
+1. **Right-Skewed Distribution:**  
+   - Wave heights are heavily skewed to the right, with smaller wave heights (around 1.0 unit) being far more frequent than larger wave heights.  
+   - This is consistent with the box plot, where most months have medians near 1.0 unit.  
+
+2. **Frequency of Extremes:**  
+   - Extreme wave heights (greater than 2.0 units) occur infrequently, making them outliers in the dataset.  
+
+3. **Mode of Wave Height:**  
+   - The mode of the distribution is around 1.0, suggesting that the most common wave height across all months is approximately this value.  
+
+4. **Uniformity Across Seasons:**  
+   - While the histogram provides a global view of wave heights, the seasonality shown in the box plot indicates that this global distribution combines distinct seasonal behaviors:  
+     - **Summer:** Contributes to the narrow peak near 1.0.  
+     - **Winter:** Contributes to the long tail of higher wave heights.  
+
+---
+
+### Box Plot of Wave Height by Month
+
+1. **Seasonal Variations:**  
+   - Wave heights show clear seasonal patterns:  
+     - Higher wave heights are observed in winter months (e.g., December, January, and February).  
+     - Lower wave heights are predominant in summer months (e.g., June, July, and August).  
+
+2. **Spread of Wave Heights:**  
+   - The spread (interquartile range) is wider during winter months, indicating greater variability in wave heights.  
+   - Summer months exhibit a narrower range, suggesting more stable wave conditions.  
+
+3. **Extreme Events:**  
+   - Winter months (especially January and December) have more outliers, representing occasional extreme wave events.  
+   - Summer months have fewer outliers, with wave heights clustering closer to the median.  
+
+4. **Trend Insight:**  
+   - This seasonal trend aligns with expected environmental patterns, where winter storms and stronger winds contribute to higher and more variable wave heights.
+
+## Model
+
+#### Model1(Create before midterm but not used in the final work)  
+In this model, we successfully predicted the relatively accurate wave height by using a large number of features such as Wind Direction (WDIR), Average Wind Speed (WSPD), Maximum Gust Speed (GST), Dominant Period (DPD), Average Period (APD), Main Wind Direction (MWD), Air Temperature (ATMP) and Water Temperature (WTMP). In order to get more accurate wave height, we try two different model which are linear regression model and Random Forest model.  
+
+### Multiple linear regression model  
 The model’s mean squared error (MSE) is 0.09983868755979808, representing the average squared difference between the predicted and actual values. A lower MSE value indicates that the model's predictions are close to the true values, suggesting good predictive accuracy.  
-Conclusion  
-The multiple linear regression model effectively revealed that the dominant period and mean wind speed are the key factors affecting wave height prediction, while other variables such as wind direction, air pressure and water temperature also have a certain impact on wave height, but to a relatively small extent. This analysis provides an important scientific basis for understanding and predicting wave height.
-![Predicting value and actual value](image/LinearRegression_prediction1.png)
 
+#### Conclusion  
+The multiple linear regression model effectively revealed that the dominant period and mean wind speed are the key factors affecting wave height prediction, while other variables such as wind direction, air pressure and water temperature also have a certain impact on wave height, but to a relatively small extent. This analysis provides an important scientific basis for understanding and predicting wave height.  
 
-2)RandomForestRegressor  
-Mean Squared Error (MSE): 0.0034733644264875645
-![Predicting value and actual value](image/RandomForestRegressor_prediction1.png)
+### RandomForestRegressor  
+Mean Squared Error (MSE): 0.0034733644264875645  
+The application of the Random Forest model in wave height prediction has significantly improved model performance. Compared to the multiple linear regression model, the Random Forest model's mean squared error is only 0.0034733644264875645, much lower than the linear regression model's 0.09983868755979808. This result indicates that the Random Forest model has a stronger advantage in handling complex nonlinear relationships and interactions between variables. The advantage of the Random Forest model lies in its ability to capture nonlinear relationships in the data while reducing the risk of overfitting through the integration of multiple decision trees, thereby enhancing the model's generalizability. Consequently, the Random Forest model is more reliable for wave height prediction and can provide more accurate results for oceanographic research and practical applications.  
 
-The application of the Random Forest model in wave height prediction has significantly improved model performance. Compared to the multiple linear regression model, the Random Forest model's mean squared error is only 0.0034733644264875645, much lower than the linear regression model's 0.09983868755979808. This result indicates that the Random Forest model has a stronger advantage in handling complex nonlinear relationships and interactions between variables. The advantage of the Random Forest model lies in its ability to capture nonlinear relationships in the data while reducing the risk of overfitting through the integration of multiple decision trees, thereby enhancing the model's generalizability. Consequently, the Random Forest model is more reliable for wave height prediction and can provide more accurate results for oceanographic research and practical applications.
+#### Conclusion:  
+The Random Forest model has demonstrated excellent performance in wave height prediction tasks, especially in handling complex data relationships, outperforming the traditional multiple linear regression model. This provides a basis for selecting a more suitable model in practical applications. In future work, further exploration of parameter tuning for the Random Forest model could be undertaken to achieve even higher prediction accuracy. Additionally, combining the Random Forest model with other machine learning methods could be considered to enhance the accuracy and robustness of wave height predictions.  
 
-Conclusion:  
-The Random Forest model has demonstrated excellent performance in wave height prediction tasks, especially in handling complex data relationships, outperforming the traditional multiple linear regression model. This provides a basis for selecting a more suitable model in practical applications. In future work, further exploration of parameter tuning for the Random Forest model could be undertaken to achieve even higher prediction accuracy. Additionally, combining the Random Forest model with other machine learning methods could be considered to enhance the accuracy and robustness of wave height predictions.
+We considered that if we wanted to use the model before the midterm to make predictions, we would need real-time feature information, such as water temperature, air temperature, wind direction and wind speed. Therefore, without using some methods to obtain data from other places, these data need to be provided by the user. However, it is obvious that this kind of information is difficult for most people to obtain, and if they already know this information, they will probably also know the real-time wave height. Therefore, this model is not of great significance for practical application. This is why we decided to use the time-series model after the midterm, that is, to use only time, which is an easily accessible feature for users, to predict. This makes our model more meaningful in terms of practical application.  
 
+### Other model we try: LSTM  
+Reference: (Long Short-Term Memory (Sepp Hochreiter and Jürgen Schmidhuber), In Neural Computation, volume 9, 1997.  
 
-### **Alternative models**
-Although the model we fit has a low MSE, the real life implication may be undermined. From the correlation matrix, we used DPD, APD (wave period) as parameters which has a correlation with WVHT very close to 1. DPD APD are essentially wave data, to prevent overfitting and make our model work without wave data, we created a different set of models without using DPD and APD (prediction.ipynb).
+#### Model Description:  
+For this model, I combine the time feature. The year, month, and day columns are combined into a single datetime column for easier handling and time-based sorting. Then, construct a sequential LSTM model.  
+- Layer 1: LSTM layer with 50 units, returning sequences for stacking.  
+- Output Layer: A dense layer with 1 unit for predicting the next day’s WVHT.  
+- The model uses the Adam optimizer and mean squared error (MSE) loss function, both suitable for regression tasks.  
 
-1. Data analysis
-We used the data from station 41053 San Juan, PR from 2020 to 2023. With DPD and APD removed, and after data cleaning (removing data codes 99, 999), the number of rows is 29864. From the correlation matrix, we see that WTMP and ATMP (water temperature and air temperature) has a significant impact of -0.28 and -0.3 on the wave height.
-2. Model Fitting
-Linear model: R-squared: 0.14619261256111482
-KNN Regressor: R-squared: 0.7263822957955518
-The linear model is not performing well, with an R-squared of 0.146, the KNN regressor performed a lot better, with R-squared of 0.726. Fine tuning the models hyperparameters will help, but it will not change the accuracy significantly.
-CNN: R-squared: 0.4581101018
-The CNN model has an R-squared of 0.4581101018, with small model size and small number of epoch. CNN is highly effective at automatically extracting complex features from data, which makes them ideal for identifying patterns in wave height prediction. CNN can capture non-linear relationships in data through convolutional and activation layers, which is very suitable for oceanographic data. This is the initial model without fine tuning. After finalizing the feature engineering, it is expected that after fine tuning the model will have a better performance at accuracy.
+#### Problem and reflection  
+This model tends to predict a relatively constant wave height to minimize the Mean Squared Error (MSE). However, this approach to reducing MSE does not align with our objectives, as it fails to accurately capture the dynamic variations in wave height.  
+By focusing on minimizing MSE, the model might prioritize predicting average values, which reduces errors in regions of stable wave heights but ignores the critical fluctuations and extremes present in the data. These variations are essential for practical applications, such as forecasting hazardous conditions or understanding seasonal trends.  
+For instance, while the MSE might appear low, this could simply indicate that the model has averaged out the peaks and troughs in the wave height data, leading to predictions that do not reflect reality. Such an outcome may result in underestimating or completely missing extreme wave events, which are often the primary concern for maritime safety and coastal management.  
+To meet the desired objectives, the model should focus not just on minimizing MSE but also on effectively capturing the full range of wave height dynamics, including seasonal patterns and short-term volatility.  
 
-### **Future plans to the model**:
-1. Expanding data selection:
-We will expand our data to include more years from our data, ideally from 2009 to 2023 to analyze the impact of time on the wave height. Also we will try to train the model on more stations across the world with station data included (Site elevation, Water depth, Air temp height etc.) So our model can be used not only within a certain region, but ideally across the world.
-2. Test with other models:
-We will try some other models such as XGBoost, Random Forest, SVM and utilize some deep learning tools to increase the accuracy.
-3. Feature Engineering:
-For the continuous data from the stations there isn't much to do for feature engineering, but with data across different station included, we can add features to capture the geographical data from the stations to provide additional information to improve accuracy.
+---
 
+### Final model: Prophet ([https://facebook.github.io/prophet/](https://facebook.github.io/prophet/))  
 
+#### Data Source and Structure:  
+The data originates from CSV files in the CleanedData directory, each presumably corresponding to a particular station. Each file contains columns for date components (#YY, MM, DD), wave height (WVHT), and water temperature (WTMP). After reading in each file, we combine the year, month, and day columns into a single datetime column.  
 
+#### Feature Inspection and Considerations:  
+- Date/Time (datetime): Acts as the primary index for forecasting. Seasonality and time-based patterns are key in time series forecasting.  
+- Wave Height (WVHT): This is one of the main target variables. We assume that wave height is affected by seasonal patterns and possibly by water temperature.  
+- Water Temperature (WTMP): Another target, also used as a regressor for wave height. Given that Prophet allows adding regressors, WTMP is introduced as a potential explanatory variable for WVHT.  
 
+#### Missing and Invalid Data Handling:  
+- The model checks if WVHT or WTMP are missing. If they are not present, that station file is skipped.  
+- Invalid WTMP values (like 999) are filtered out. This ensures the training data for temperature forecasting is consistent and does not include placeholder or erroneous values.  
 
+#### Target Variables:  
+- WTMP (Water Temperature): Modeled first. This is forecast independently to then serve as a known regressor for the second model. We also want to use this data in the front end to suggest suitable clothing for travelers.  
+- WVHT (Wave Height): Modeled second, using the predicted WTMP values as an external regressor. The rationale is that wave height might be influenced by water conditions, including temperature, so incorporating predicted WTMP could improve WVHT forecasts.  
 
+#### Chosen Features:  
+- Time (ds): Essential for Prophet’s time series modeling.  
+- Yearly Seasonality: Chosen by default with Prophet. Since marine variables often have strong seasonal patterns, yearly seasonality was enabled.  
+- WTMP as Regressor for WVHT Model: Selected because water temperature variations are likely correlated with wave conditions. Prophet supports adding regressors easily, making this choice a natural step. Using WTMP as a regressor, the MSE for WVHT typically reduced 0.001, which is a small effect. As we are running the model again in the front end, adding other regressor with minimal impact on accuracy will add to the run time and undermine user experience.  
 
+---
 
+### Why Prophet?  
+The chosen model for both WTMP and WVHT is Facebook Prophet (now known as prophet). Prophet is a widely-used forecasting library that simplifies time series forecasting by:  
+- Automatically handling seasonality (weekly, yearly).  
+- Providing credible intervals for forecasts.  
+- Being relatively straightforward to implement, tune, and interpret.  
+
+#### Tuning Parameters:  
+- Yearly Seasonality: Set to True, which likely improves the model for marine conditions that vary seasonally.  
+- Interval Width: Set to 0.90 for the WTMP model and 0.70 for the WVHT model. This controls the uncertainty interval width. For water temperature, users likely value more precise and reliable information because temperature fluctuations can have significant impacts. For wave height, users might prioritize a tighter range (narrower interval) to avoid overly broad predictions that could be less actionable. For example, a range of “0 to 3 meters” might be too vague for decision-making.  
+
+#### Metrics:  
+- Mean Absolute Error (MAE): This metric measures the average magnitude of forecast errors. The code calculates MAE for both WVHT and WTMP predictions.  
+- The lower the MAE, the closer the predictions are to the actual observed values.  
+
+MAE is easy to interpret and robust to outliers compared to Mean Squared Error. In forecasting tasks, MAE directly relates to the absolute deviation from the actual values.  
+
+The MAE varies between 0.3 to 0.8 for our model, as different sites have different variations and patterns.  
+Please refer to the plots folder after running the code for the model performance visualization.  
+Here is a sample of our model on Puerto Rico:  
+
+## Webpage
+
+### Integration of Prediction Results with Frontend
+The integration of prediction results with the frontend is a crucial aspect of ensuring a smooth user experience. In this application, the backend (`app.py`) processes user inputs, generates predictions and plots, and then dynamically updates the frontend interface to display the results interactively.
+
+### Data Flow between Backend and Frontend
+1. **User Input:**  
+   - The frontend collects user input via a form (wave height, number of days, date range) and sends it to the `/get_predictions` route as a POST request using Axios.
+
+2. **Processing and JSON Response:**  
+   - The backend processes the request, identifies the top three prediction windows, generates plots, and packages the results in a JSON response. This includes:
+     - Surf station ID.
+     - Date range for each window.
+     - Plot URLs pointing to the prediction plots stored in the `static/prediction_plots` directory.
+     - Outfit suggestions based on average water temperature.
+
+3. **Dynamic Button Generation:**  
+   - The frontend dynamically creates buttons for the top three prediction windows. Each button represents a specific window, labeled with its station ID and date range.
+   - Clicking on a button triggers a JavaScript function (`displayPlot`) to update the right section of the page with the corresponding plot.
+
+### JavaScript for Button Functionality
+The JavaScript function `displayPlot(stationId, plotUrl)` is central to the integration:
+- When a user clicks a button:
+  - The station ID and plot URL of the selected window are passed to `displayPlot`.
+  - The plot image for the selected window is displayed in the right section of the webpage.
+
+#### Code Example:
+```javascript
+function displayPlot(stationId, plotUrl) {
+    const imageBox = document.getElementById("imageBox");
+    imageBox.innerHTML = `<img src="${plotUrl}" alt="Plot for ${stationId}" style="max-width: 100%; border-radius: 8px;">`;
+}
+```
+
+### Frontend Button Creation
+
+Upon receiving the JSON response, the frontend generates buttons for the top three prediction windows:
+
+- **Button Rendering:**  
+  - Each button includes the station ID and date range for a window.  
+  - When clicked, it invokes `displayPlot` with the plot URL corresponding to the selected window.
+
+### Real-Time Plot Updates
+
+- Clicking on a button updates the right section (`imageBox`) with the corresponding plot.  
+- The prediction plots for the top three windows are saved dynamically by the backend during the processing phase using Matplotlib.
+
+### Summary
+
+By combining dynamic button creation and interactive plot rendering, the application provides users with an intuitive way to visualize predictions and make informed surfing plans. This integration bridges the backend computations with the interactive user interface, ensuring a seamless experience for users.
+
+## Outcome
+
+The webpage generates tailored recommendations for surfing based on user input. It identifies the optimal time periods and surfing locations with wave heights that most closely match the user's desired wave height within their specified time frame. Additionally, the platform predicts water temperatures and provides outfit recommendations based on these predictions, ensuring a comfortable and safe surfing experience. The website also includes visualizations, presenting detailed plots of predicted wave heights and water temperatures over time, offering users a comprehensive and interactive planning tool.
