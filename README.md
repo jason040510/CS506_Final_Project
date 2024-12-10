@@ -172,7 +172,7 @@ We considered that if we wanted to use the model before the midterm to make pred
 Reference: (Long Short-Term Memory (Sepp Hochreiter and Jürgen Schmidhuber), In Neural Computation, volume 9, 1997.  
 
 #### Model Description:  
-For this model, I combine the time feature. The year, month, and day columns are combined into a single datetime column for easier handling and time-based sorting. Then, construct a sequential LSTM model.  
+For this model, We combine the time feature. The year, month, and day columns are combined into a single datetime column for easier handling and time-based sorting. Then, construct a sequential LSTM model.  
 - Layer 1: LSTM layer with 50 units, returning sequences for stacking.  
 - Output Layer: A dense layer with 1 unit for predicting the next day’s WVHT.  
 - The model uses the Adam optimizer and mean squared error (MSE) loss function, both suitable for regression tasks.  
