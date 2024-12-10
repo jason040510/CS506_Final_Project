@@ -285,3 +285,9 @@ By combining dynamic button creation and interactive plot rendering, the applica
 ## Outcome
 ![Example of website](image/website_apperance.png)
 The webpage generates tailored recommendations for surfing based on user input. It identifies the optimal time periods and surfing locations with wave heights that most closely match the user's desired wave height within their specified time frame. Additionally, the platform predicts water temperatures and provides outfit recommendations based on these predictions, ensuring a comfortable and safe surfing experience. The website also includes visualizations, presenting detailed plots of predicted wave heights and water temperatures over time, offering users a comprehensive and interactive planning tool.
+
+## Future Research
+
+Future scholars can build upon this research by exploring related questions that delve deeper into unresolved issues or gaps in understanding. For instance, they could investigate the broader implications of the findings across different contexts, populations, or time periods. Employing interdisciplinary approaches or integrating emerging methodologies, such as advanced data analysis techniques or experimental designs, could provide new insights. Additionally, comparative studies or longitudinal research may shed light on trends and variations over time. Collaborating across diverse fields or regions can also enhance the scope and applicability of future research, fostering a richer and more nuanced understanding of the subject.
+
+For practical application, the website could be expanded to include more stations, providing broader coverage and improving accuracy. Additionally, the platform could be developed into a mobile app, making it more accessible and user-friendly for a wider audience.
