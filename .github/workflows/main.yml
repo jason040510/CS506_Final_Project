@@ -1,4 +1,4 @@
-name: Wave Model CI
+name: Makefile Workflow
 
 on:
   push:
@@ -19,12 +19,24 @@ jobs:
       with:
         python-version: '3.9'
 
-    - name: Install dependencies
+    - name: Run Makefile Install
       run: |
-        python -m venv venv
-        ./venv/bin/pip install --upgrade pip
-        ./venv/bin/pip install -r requirements.txt
+        make install
 
-    - name: Run Tests
+    - name: Run Makefile Process Data
       run: |
-        ./venv/bin/pytest tests/
+        make process_data
+
+    - name: Run Makefile Run Model
+      run: |
+        make run_model
+
+    - name: Run Makefile Run Website
+      run: |
+        make run_website &
+      # Adding a sleep delay to simulate a website being run during testing
+      # This can be removed if actual website interaction testing is added sleep 30
+
+    - name: Clean Up
+      run: |
+        make clean
