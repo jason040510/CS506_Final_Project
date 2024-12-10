@@ -1,9 +1,8 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from flask import Flask, jsonify, request, render_template
 import pandas as pd
 from make_images import make_images
 import os
- 
 
 app = Flask(__name__)
 
@@ -38,18 +37,19 @@ def get_predictions():
         end_date = datetime.strptime(vacation_end_date, "%Y-%m-%d")
 
         # Validate dataset columns
-        required_columns = {'station_id', 'ds', 'yhat', 'yhat_lower', 'yhat_upper',
-                            'WTMP_pred', 'WTMP_pred_lower', 'WTMP_pred_upper'}
+        required_columns = {
+            'station_id', 'ds', 'yhat', 'yhat_lower', 'yhat_upper',
+            'WTMP_pred', 'WTMP_pred_lower', 'WTMP_pred_upper'
+        }
         if not required_columns.issubset(data.columns):
             raise ValueError("Dataset does not have the required columns.")
 
         # Convert `ds` to full_date in the main dataset
-        current_year = datetime.now().year
-        data['full_date'] = pd.to_datetime(f"{current_year}-" + data['ds'], format="%Y-%m-%d")
+        data['full_date'] = pd.to_datetime(f"{datetime.now().year}-" + data['ds'], format="%Y-%m-%d")
 
-        if start_date.year > current_year or end_date.year > current_year:
-            next_year = current_year + 1
-            data['full_date'] = pd.to_datetime(f"{next_year}-" + data['ds'], format="%Y-%m-%d")
+        # Adjust for multi-year date ranges
+        if start_date.year > datetime.now().year or end_date.year > datetime.now().year:
+            data['full_date'] = pd.to_datetime(f"{end_date.year}-" + data['ds'], format="%Y-%m-%d")
 
         # Filter data for the selected date range
         vacation_data = data[
@@ -64,9 +64,9 @@ def get_predictions():
         # Find the best `num_days` vacation windows
         response = suggest_vacation_windows(vacation_data, wave_height, num_days)
 
-        # Get the best window
-        best_window = response.get('best_window', None)
-        if best_window is None or best_window.empty:
+        # Get the best windows
+        top_windows = response.get('top_windows', [])
+        if not top_windows:
             return jsonify({
                 'message': "No suitable vacation windows found.",
                 'html': "No matches available.",
@@ -74,37 +74,33 @@ def get_predictions():
                 'graphs': []
             })
 
-        # Get the station ID and the date range from the best window
-        best_station_id = best_window.iloc[0]['station_id']
-        best_window_start = best_window['full_date'].min().strftime('%Y-%m-%d')
-        best_window_end = best_window['full_date'].max().strftime('%Y-%m-%d')
-
-        # Generate graphs for the best station and time range
         graph_paths = []
-        input_file = f"../CleanedData/{best_station_id}.csv"  # Adjust for relative path
-        if not os.path.exists(input_file):
-            print(f"File not found: {input_file}")
-            return jsonify({
-                'message': "File for the selected station is missing.",
-                'html': "No graphs generated.",
-                'outfit_suggestion': "No outfit suggestion available.",
-                'graphs': []
-            })
+        for idx, (window, _) in enumerate(top_windows):
+            station_id = window.iloc[0]['station_id']
+            window_start = window['full_date'].min().strftime('%Y-%m-%d')
+            window_end = window['full_date'].max().strftime('%Y-%m-%d')
 
-        try:
-            wvht_graph, wtmp_graph = make_images(input_file, best_station_id, best_window_start, best_window_end)
-            graph_paths.append({'location': best_station_id, 'wvht': wvht_graph, 'wtmp': wtmp_graph})
-        except Exception as e:
-            print(f"Error generating graphs for {best_station_id}: {e}")
+            # Generate graphs for each station and time range
+            input_file = f"../CleanedData/{station_id}.csv"  # Adjust for relative path
+            if not os.path.exists(input_file):
+                print(f"File not found: {input_file}")
+                continue
+
+            try:
+                wvht_graph, wtmp_graph = make_images(input_file, station_id, window_start, window_end)
+                graph_paths.append({'location': station_id, 'wvht': wvht_graph, 'wtmp': wtmp_graph})
+            except Exception as e:
+                print(f"Error generating graphs for {station_id}: {e}")
 
         # Calculate the average water temperature for the best vacation window
+        best_window = top_windows[0][0]
         avg_temp = best_window['WTMP_pred'].mean()
         outfit_suggestion = get_outfit_suggestion(avg_temp)
         outfit_message = f"For an average water temperature of {avg_temp:.2f}°C: {outfit_suggestion}"
 
         # Return response with the generated graphs and suggestions
         return jsonify({
-            'message': response.get('message', "Here is your best match:"),
+            'message': response.get('message', "Here are your top matches:"),
             'html': response.get('html', ""),
             'outfit_suggestion': outfit_message,
             'graphs': graph_paths
@@ -114,7 +110,7 @@ def get_predictions():
         return jsonify({'error': f"Input Error: {str(ve)}"}), 400
     except Exception as e:
         return jsonify({'error': f"Unexpected Error: {str(e)}"}), 500
-    
+
 def get_outfit_suggestion(temp):
     """
     Suggest a surfing outfit based on the water temperature.
@@ -134,30 +130,41 @@ def suggest_vacation_windows(data, wave_height, num_days):
     """
     Suggest the top 3 vacation windows of `num_days` consecutive days 
     based on wave height differences within the given range.
+    
+    This function ensures that each suggested window comes from a distinct station.
     """
     try:
         data['diff'] = abs(data['yhat'] - wave_height)
         vacation_windows = []
-        station_ids = set()  # Use a set to hold unique station IDs
-        
+
+        # Identify potential windows
         for i in range(len(data) - num_days + 1):
             window = data.iloc[i:i + num_days]
-            if len(window) == num_days:
+            # Ensure all rows in this window are from the same station
+            if window['station_id'].nunique() == 1:
                 min_diff = window['diff'].sum()
                 vacation_windows.append((window, min_diff))
-                # Collect unique station IDs from the window
-                station_ids.update(window['station_id'].unique())
-        
-        # Sort and pick the top 3
-        top_windows = sorted(vacation_windows, key=lambda x: x[1])[:3]
 
-        if not top_windows:
-            return {'message': "No suitable vacation windows found.", 'html': "", 'best_window': None, 'station_ids': []}
+        # Sort windows by their total difference
+        vacation_windows.sort(key=lambda x: x[1])
 
-        best_window = top_windows[0][0]  # The best window is the first in sorted list
+        # Now ensure we pick top windows from distinct stations
+        unique_station_windows = []
+        used_stations = set()
+        for window, diff_val in vacation_windows:
+            station_id = window.iloc[0]['station_id']
+            if station_id not in used_stations:
+                unique_station_windows.append((window, diff_val))
+                used_stations.add(station_id)
+            if len(unique_station_windows) == 3:
+                break
+
+        if not unique_station_windows:
+            return {'message': "No suitable vacation windows found.", 'html': "", 'top_windows': []}
+
+        # Prepare the HTML suggestions
         suggestions = []
-
-        for window, _ in top_windows:
+        for window, _ in unique_station_windows:
             suggestion = [
                 f"{row['full_date'].strftime('%Y-%m-%d')} - {row['station_id'].split('_')[0]}, "
                 f"Wave height: {row['yhat']:.2f}m, Water Temp: {row['WTMP_pred']:.2f}°C"
@@ -168,60 +175,11 @@ def suggest_vacation_windows(data, wave_height, num_days):
         return {
             'message': "Here are the top 3 vacation windows:",
             'html': "<br><br>".join(suggestions),
-            'best_window': best_window,
-            'station_ids': list(station_ids)  # Convert set to list for output
+            'top_windows': unique_station_windows
         }
+
     except Exception as e:
-        return {'message': f"Error suggesting vacation windows: {str(e)}", 'html': "", 'best_window': None, 'station_ids': []}
-
-def suggest_alternative_dates(data, start_date, end_date, wave_height, num_days):
-    """
-    Suggest the 3 best permutations of `num_days` consecutive days after the selected range
-    based on wave height differences.
-    """
-    try:
-        # Filter data after the selected range
-        future_data = data[data['full_date'] > end_date].copy()
-
-        # Calculate the absolute difference between `yhat` and the desired wave height
-        future_data['diff'] = abs(future_data['yhat'] - wave_height)
-
-        # Sort future data by date to ensure chronological order
-        future_data = future_data.sort_values('full_date').reset_index(drop=True)
-
-        # Find the best permutations of `num_days` consecutive days
-        vacation_windows = []
-        for i in range(len(future_data) - num_days + 1):
-            streak = future_data.iloc[i:i + num_days]
-            if len(streak) == num_days:
-                total_diff = streak['diff'].sum()
-                vacation_windows.append((streak, total_diff))
-
-        # Sort the matches by total difference and pick the top 3
-        top_windows = sorted(vacation_windows, key=lambda x: x[1])[:3]
-
-        if not top_windows:
-            return {"message": "No alternative sets of dates found.", "html": ""}
-
-        # Format suggestions
-        suggestions = []
-        for window, _ in top_windows:
-            suggestion = [
-                f"{row['full_date'].strftime('%Y-%m-%d')} - {row['station_id'].split('_')[0]}, "
-                f"Wave height: {row['yhat']:.2f}m, Water Temp: {row['WTMP_pred']:.2f}°C"
-                for _, row in window.iterrows()
-            ]
-            suggestions.append("<br>".join(suggestion))
-
-        return {
-            "message": "Here are the top 3 alternative vacation windows:",
-            "html": "<br><br>".join(suggestions)
-        }
-    except Exception as e:
-        return {"error": f"Error suggesting alternative dates: {str(e)}"}
-    
-import os
-import shutil
+        return {'message': f"Error suggesting vacation windows: {str(e)}", 'html': "", 'top_windows': []}
 
 @app.route('/clear_images', methods=['POST'])
 def clear_images():
@@ -231,7 +189,6 @@ def clear_images():
     try:
         folder_path = './static/forecast_images'  # Adjust the path if necessary
         if os.path.exists(folder_path):
-            # Remove all files in the folder
             for filename in os.listdir(folder_path):
                 file_path = os.path.join(folder_path, filename)
                 if os.path.isfile(file_path):
