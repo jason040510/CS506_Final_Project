@@ -1,7 +1,10 @@
+import matplotlib
+matplotlib.use('Agg')
 import pandas as pd
 from prophet import Prophet
 import matplotlib.pyplot as plt
 import os
+
 
 
 def make_images(input_file, location_name, start_date, end_date, output_dir="static/forecast_images"):
