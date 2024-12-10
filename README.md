@@ -82,7 +82,7 @@ Since all raw data is stored in annual units, we combined the data for each site
    The cleaned data files were saved in the `CleanedData` folder, making them ready for use in modeling.
 
 ## Visualization of Data
-
+Use PuertoRico_41053 as an example
 ### Correlation Matrix
 A correlation matrix was used to identify relationships between features, such as wave height and water temperature, across the dataset. 
 ![Correlation Matrix after removing outliers](image/correlation_matrix%202.png)
@@ -228,7 +228,7 @@ MAE is easy to interpret and robust to outliers compared to Mean Squared Error. 
 
 The MAE varies between 0.3 to 0.8 for our model, as different sites have different variations and patterns.  
 Please refer to the plots folder after running the code for the model performance visualization.  
-Here is a sample of our model on Puerto Rico:  
+Here is a sample of our model on Puerto Rico (For other stations check for the plots/ floder after running the model):  
 ![Prophet Model with wave height](image/PuertoRico_41053_WVHT.png) 
 ![Prophet Model with water temperature](image/PuertoRico_41053_WTMP.png) 
 ## Webpage
