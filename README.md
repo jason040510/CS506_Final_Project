@@ -88,7 +88,7 @@ A correlation matrix was used to identify relationships between features, such a
 ![Correlation Matrix after removing outliers](image/correlation_matrix%202.png)
 
 ### Wave Height Over Time 
-![Wave height over time](image/Trend_and_Seasonality%202.png)
+![Wave height over time](image/Trend_and_Seasonality.png)
 1. **Seasonal Trends:**  
    - The 30-day rolling mean (red line) reveals clear periodic fluctuations in wave height.  
    - Peaks in the rolling mean are observed at consistent intervals, suggesting a seasonal pattern likely influenced by weather changes, such as seasonal storms or varying wind speeds.  
@@ -112,7 +112,7 @@ A correlation matrix was used to identify relationships between features, such a
 ---
 
 ### Wave Height Distribution
-
+![Wave Height Distribution ](image/Wave_Height_Distribution.png)
 1. **Right-Skewed Distribution:**  
    - Wave heights are heavily skewed to the right, with smaller wave heights (around 1.0 unit) being far more frequent than larger wave heights.  
    - This is consistent with the box plot, where most months have medians near 1.0 unit.  
@@ -131,7 +131,7 @@ A correlation matrix was used to identify relationships between features, such a
 ---
 
 ### Box Plot of Wave Height by Month
-
+![Box Plot of Wave Height by Month](image/Wave_Height_by_Month.png)
 1. **Seasonal Variations:**  
    - Wave heights show clear seasonal patterns:  
      - Higher wave heights are observed in winter months (e.g., December, January, and February).  
@@ -155,14 +155,14 @@ In this model, we successfully predicted the relatively accurate wave height by 
 
 ### Multiple linear regression model  
 The model’s mean squared error (MSE) is 0.09983868755979808, representing the average squared difference between the predicted and actual values. A lower MSE value indicates that the model's predictions are close to the true values, suggesting good predictive accuracy.  
-
+![Multiple Linear Regression](image/LinearRegression_prediction1.png)
 #### Conclusion  
 The multiple linear regression model effectively revealed that the dominant period and mean wind speed are the key factors affecting wave height prediction, while other variables such as wind direction, air pressure and water temperature also have a certain impact on wave height, but to a relatively small extent. This analysis provides an important scientific basis for understanding and predicting wave height.  
 
 ### RandomForestRegressor  
 Mean Squared Error (MSE): 0.0034733644264875645  
 The application of the Random Forest model in wave height prediction has significantly improved model performance. Compared to the multiple linear regression model, the Random Forest model's mean squared error is only 0.0034733644264875645, much lower than the linear regression model's 0.09983868755979808. This result indicates that the Random Forest model has a stronger advantage in handling complex nonlinear relationships and interactions between variables. The advantage of the Random Forest model lies in its ability to capture nonlinear relationships in the data while reducing the risk of overfitting through the integration of multiple decision trees, thereby enhancing the model's generalizability. Consequently, the Random Forest model is more reliable for wave height prediction and can provide more accurate results for oceanographic research and practical applications.  
-
+![RandomForestRegressor](image/RandomForestRegressor_prediction1.png)
 #### Conclusion:  
 The Random Forest model has demonstrated excellent performance in wave height prediction tasks, especially in handling complex data relationships, outperforming the traditional multiple linear regression model. This provides a basis for selecting a more suitable model in practical applications. In future work, further exploration of parameter tuning for the Random Forest model could be undertaken to achieve even higher prediction accuracy. Additionally, combining the Random Forest model with other machine learning methods could be considered to enhance the accuracy and robustness of wave height predictions.  
 
@@ -176,7 +176,7 @@ For this model, I combine the time feature. The year, month, and day columns are
 - Layer 1: LSTM layer with 50 units, returning sequences for stacking.  
 - Output Layer: A dense layer with 1 unit for predicting the next day’s WVHT.  
 - The model uses the Adam optimizer and mean squared error (MSE) loss function, both suitable for regression tasks.  
-
+![LSTM Model](image/LSTM_Prediction.png)
 #### Problem and reflection  
 This model tends to predict a relatively constant wave height to minimize the Mean Squared Error (MSE). However, this approach to reducing MSE does not align with our objectives, as it fails to accurately capture the dynamic variations in wave height.  
 By focusing on minimizing MSE, the model might prioritize predicting average values, which reduces errors in regions of stable wave heights but ignores the critical fluctuations and extremes present in the data. These variations are essential for practical applications, such as forecasting hazardous conditions or understanding seasonal trends.  
@@ -229,7 +229,8 @@ MAE is easy to interpret and robust to outliers compared to Mean Squared Error. 
 The MAE varies between 0.3 to 0.8 for our model, as different sites have different variations and patterns.  
 Please refer to the plots folder after running the code for the model performance visualization.  
 Here is a sample of our model on Puerto Rico:  
-
+![Prophet Model with wave height](image/PuertoRico_41053_WVHT.png) 
+![Prophet Model with water temperature](image/PuertoRico_41053_WTMP.png) 
 ## Webpage
 
 ### Integration of Prediction Results with Frontend
@@ -282,5 +283,5 @@ Upon receiving the JSON response, the frontend generates buttons for the top thr
 By combining dynamic button creation and interactive plot rendering, the application provides users with an intuitive way to visualize predictions and make informed surfing plans. This integration bridges the backend computations with the interactive user interface, ensuring a seamless experience for users.
 
 ## Outcome
-
+![Example of website](image/website_apperance.png)
 The webpage generates tailored recommendations for surfing based on user input. It identifies the optimal time periods and surfing locations with wave heights that most closely match the user's desired wave height within their specified time frame. Additionally, the platform predicts water temperatures and provides outfit recommendations based on these predictions, ensuring a comfortable and safe surfing experience. The website also includes visualizations, presenting detailed plots of predicted wave heights and water temperatures over time, offering users a comprehensive and interactive planning tool.
