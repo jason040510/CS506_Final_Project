@@ -1,5 +1,7 @@
 import pandas as pd
 from prophet import Prophet
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import os
 
@@ -57,7 +59,7 @@ def make_images(input_file, location_name, start_date, end_date, output_dir="sta
     wtmp_model = Prophet(yearly_seasonality=True, interval_width=0.90)
     wtmp_model.fit(train_wtmp)
 
-    future_wtmp = wtmp_model.make_future_dataframe(2*365)
+    future_wtmp = wtmp_model.make_future_dataframe(periods=(end_date - train_wtmp['ds'].max()).days)
     wtmp_forecast = wtmp_model.predict(future_wtmp)
 
     # Filter predictions for the specified date range
