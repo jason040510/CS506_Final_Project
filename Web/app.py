@@ -44,7 +44,12 @@ def get_predictions():
             raise ValueError("Dataset does not have the required columns.")
 
         # Convert `ds` to full_date in the main dataset
-        data['full_date'] = pd.to_datetime("2024-" + data['ds'], format="%Y-%m-%d")
+        current_year = datetime.now().year
+        data['full_date'] = pd.to_datetime(f"{current_year}-" + data['ds'], format="%Y-%m-%d")
+
+        if start_date.year > current_year or end_date.year > current_year:
+            next_year = current_year + 1
+            data['full_date'] = pd.to_datetime(f"{next_year}-" + data['ds'], format="%Y-%m-%d")
 
         # Filter data for the selected date range
         vacation_data = data[
